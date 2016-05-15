@@ -1,0 +1,21 @@
+{
+  "name": "clio",
+  "version": "0.0.0",
+  "description": "Simplifies login during development and production phases",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --reporter spec",
+    "autotest": "supervisor -q -n exit -x mocha -- -b"
+  },
+  "author": "Joel Roxell (https://github.com/JoelRoxell)",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^2.10.1",
+    "mocha": "^2.4.5",
+    "supervisor": "^0.10.0"
+  },
+  "dependencies": {
+    "whatwg-fetch": "^1.0.0"
+  }
+}
