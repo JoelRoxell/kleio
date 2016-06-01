@@ -5,7 +5,7 @@
     "es6": true,
     "node": true
   },
-  "extends": "eslint:recommended",
+  "extends": "google",
   "globals": {
     "describe": true,
     "it": true
@@ -28,7 +28,7 @@
     ],
     "semi": [
       "error",
-      "never"
+      2
     ],
     "no-console": 0
   }
