@@ -4,16 +4,25 @@
   "description": "Simplifies login during development and production phases",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --reporter spec",
-    "autotest": "supervisor -q -n exit -x mocha -- -b"
+    "dev": "webpack --progress --colors --watch --config config/webpack.config.js",
+    "test": "NODE_PATH=./src mocha ./test/**/*.js --compilers js:babel-core/register --recursive",
+    "test-watch": "NODE_PATH=./src mocha ./test/**/*.js --compilers js:babel-core/register --recursive --watch"
   },
   "author": "Joel Roxell (https://github.com/JoelRoxell)",
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "^6.9.0",
+    "babel-core": "^6.9.1",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.9.0",
     "chai": "^3.5.0",
     "eslint": "^2.10.1",
-    "mocha": "^2.4.5",
-    "supervisor": "^0.10.0"
+    "eslint-config-google": "^0.5.0",
+    "exports-loader": "^0.6.3",
+    "imports-loader": "^0.6.5",
+    "jsdom": "^9.2.1",
+    "mocha": "^2.5.3",
+    "webpack": "^1.13.1"
   },
   "dependencies": {
     "whatwg-fetch": "^1.0.0"
