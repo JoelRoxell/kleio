@@ -1,23 +1,17 @@
 {
   "env": {
     "browser": true,
-    "commonjs": true,
     "es6": true,
-    "node": true
+    "mocha": true
   },
   "extends": "google",
   "globals": {
-    "describe": true,
-    "it": true
   },
   "parserOptions": {
     "sourceType": "module"
   },
   "rules": {
-    "indent": [
-      "error",
-      2
-    ],
+    "indent": ["error", 2, { "VariableDeclarator": 2 }],
     "linebreak-style": [
       "error",
       "unix"
@@ -28,8 +22,16 @@
     ],
     "semi": [
       "error",
-      2
+      "always"
     ],
+    "one-var": [
+      2,
+      "always"
+    ],
+    "object-curly-spacing": ["error", "always", {
+      "objectsInObjects": false,
+      "arraysInObjects": false
+    }],
     "no-console": 0
   }
 }
