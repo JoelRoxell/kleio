@@ -10,14 +10,19 @@ class Clio {
   /**
    * Constructor
    *
-   * @param  {String} socket comprised host name.
+   * @param  {String} socket comprised hostname.
    * @param  {String} env environment configuration.
+   * @param  {Function} postMethod Allow send method to be replaced.
    */
-  constructor(socket = '', env = 'dev') {
+  constructor(socket = '', env = 'dev', postMethod) {
     this._id = crypto.randomBytes(8).toString('hex');
     this._env = env;
 
     Object.assign(this, this._splitHostFromPath(socket));
+
+    // Allow server function to be replaced.
+    this._postMethod = typeof postMethod === 'function' ?
+      postMethod : this._defaultPostMethod;
   }
 
   get host() {
@@ -33,50 +38,100 @@ class Clio {
   }
 
   /**
-   * [_splitHostFromPath description]
-   * @param  {[type]} url [description]
-   * @return {[type]}     [description]
+   * Splits the domain name from port number.
+   * @param  {String} socket socket specification
+   *
+   * @return {Array} Array of the "divided" socket.
    */
-  _splitHostFromPath(url) {
-    if (typeof url !== 'string') {
+  _splitHostFromPath(socket) {
+    let hostConfig = null,
+        host = null,
+        port = null;
+
+    if (typeof socket !== 'string') {
       throw new Error('Passted socket configuration must be of type string');
     }
 
-    const hostConfig = url.split(':');
+    hostConfig = socket.split(':');
+    port = parseInt(hostConfig.pop(), 10);
+    host = hostConfig.join(':');
+
+    if (typeof host !== 'string' || typeof port !== 'number') {
+      throw new Error('Invalid host string was passed.');
+    }
 
     return {
-      _host: hostConfig[0],
-      _port: parseInt(hostConfig[1], 10)
+      _host: host,
+      _port: parseInt(port, 10)
     };
   }
 
   /**
-   * [_send description]
-   * @param  {[type]}   log [description]
-   * @param  {Function} cb  [description]
+   * Send the passed log object to an external service.
+   *
+   * @param  {Log}   log object.
+   * @param  {Function} postMethod use the post function specified by constructor.
+   * @param  {Function} cb  callback.
    */
-  _send(log, cb) {
-    const postData = JSON.stringify(log);
+  _sendWrapper(log, postMethod, cb) {
+    postMethod(log, cb);
+  }
 
-    fetch(
-      this._host,
-      'POST',
-      {
-        body: postData
-      }
-    ).then(res => {
+  /**
+   * Default post method used to send log object to an external service,
+   * may be overriden in constructor.
+   *
+   * @param  {Log}      log object.
+   * @param  {Function} cb  callback.
+   *
+   * @return {Object}   payload sent to server.
+   */
+  _defaultPostMethod(log, cb) {
+    const payload = JSON.stringify(log);
+
+    fetch(this._host, 'POST', {
+      body: JSON.stringify(log)
+    }).then(res => {
       if (typeof cb === 'function') {
         cb(null, res);
       }
-    }).catch(err => {
-      console.log(err);
-      cb(err);
-    });
+    }).catch(err => cb(err));
+
+    return payload;
   }
 
-  _print() {}
+  /**
+   * Prints log model information to console.
+   *
+   * @param  {Log} log object
+   */
+  _print(log) {
+    const levels = Clio.levels;
 
-  _store() {}
+    switch (log.level) {
+      case levels.ERROR:
+        console.error(log.description, log);
+        break;
+      case levels.WARN:
+        console.warn(log.description, log);
+        break;
+      case levels.INFO:
+        console.info(log.description, log);
+        break;
+      case levels.VERBOSE:
+        console.log(log.description, log);
+        break;
+      case levels.DEBUG:
+        console.debug(log.description, log);
+        break;
+      default:
+        throw new Error('A log level must be provided');
+    }
+  }
+
+  _store() {
+    // TODO: Store log in localstorage.
+  }
 
   /**
    * Recoreds the current description, depending on the initial configuration the item will either be sent to console, server and/or localstorage.
@@ -97,7 +152,7 @@ class Clio {
     const log = new Log(description, level, stacktrace, data);
 
     if (this._env === Clio.ENV_MODES.PROD) {
-      this._send(log);
+      this._postMethod(log);
     } else {
       this._print(log);
     }
@@ -107,7 +162,6 @@ class Clio {
 }
 
 Clio.levels = levels;
-
 Clio.ENV_MODES = config.ENV_MODES;
 
 export default Clio;

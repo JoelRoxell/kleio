@@ -8,7 +8,7 @@ describe('Clio', () => {
   let clio = null;
 
   beforeEach(() => {
-    const socket = 'localhost:8080',
+    const socket = 'http://localhost:80',
         env = 'dev';
 
     clio = new Clio(socket, env);
@@ -21,12 +21,17 @@ describe('Clio', () => {
   });
 
   it('Separate host string', () => {
-    expect(clio.host).to.contain('localhost');
-    expect(clio.port).to.equal(8080);
+    expect(clio.host).to.contain('http://localhost');
+    expect(clio.port).to.equal(80);
   });
 
   it('Record an error', () => {
-    const log = clio.record('Test', Clio.levels.VERBOSE, 'stack', {
+    let logger = new Clio('http://logger.dev/stack:80', Clio.ENV_MODES.PROD, log => {
+      // Perform server communication...
+      return log;
+    });
+
+    const log = logger.record('Test', Clio.levels.VERBOSE, 'stack', {
       context: 'test issue'
     });
 
@@ -39,23 +44,22 @@ describe('Clio', () => {
   });
 
   it('Validate all messageing levels', () => {
-    throw 'Not implemented';
-  });
-
-  it('Structure a server request', () => {
-    throw 'Not implemented';
-  });
-
-  it('Trigger callback on response', () => {
-    throw 'Not implemented';
+    expect(Clio.levels).to.deep.equal({
+      ERROR: 0,
+      WARN: 1,
+      INFO: 2,
+      VERBOSE: 3,
+      DEBUG: 4,
+      SILLY: 5
+    });
   });
 
   it('Store stacktrace in localstorage', () => {
-    throw 'Not implemented';
+    throw new Error('Not implemented');
   });
 
   describe('Log', () => {
-    it('Instantiate', () => {
+    it('Instantiate model', () => {
       const error = `Error: stackTrace\n at Context.<anonymous>`,
           log = new Log(
             'Test log init',
