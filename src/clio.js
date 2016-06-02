@@ -1,8 +1,9 @@
 import levels from 'models/log-levels';
+import Log from 'models/log';
 import crypto from 'crypto';
 
 /**
- * Core class that provides simplified logging capabilities.
+ * Core class which provides simplified logging capabilities.
  */
 class Clio {
   /**
@@ -11,8 +12,8 @@ class Clio {
    * @param  {String} env environment configuration.
    */
   constructor(socket = '', env = 'dev') {
-    this._id = crypto.randomBytes(8).toString('hex')
-    this._levels = levels
+    this._id = crypto.randomBytes(8).toString('hex');
+    this._env = env;
 
     Object.assign(this, this._splitHostFromPath(socket));
   }
@@ -43,45 +44,55 @@ class Clio {
 
     return {
       _host: hostConfig[0],
-      _port: parseInt(hostConfig[1])
-    }
+      _port: parseInt(hostConfig[1], 10)
+    };
   }
 
   /**
    * [_send description]
    * @param  {[type]}   log [description]
    * @param  {Function} cb  [description]
-   * @return {[type]}       [description]
    */
   _send(log, cb) {
     const postData = JSON.stringify(log);
 
-    fetch(this._host, 'GET').then((res) => {
-      if (typeof cb === 'function') {
-        cb();
+    fetch(
+      this._host,
+      'POST',
+      {
+        body: postData
       }
-    }).catch((err) => {
+    ).then(res => {
+      if (typeof cb === 'function') {
+        cb(null, res);
+      }
+    }).catch(err => {
       console.log(err);
-      cb();
+      cb(err);
     });
   }
 
   /**
-   * [record description]
-   * @param  {[type]} message    =             '' [description]
-   * @param  {[type]} stacktrace =             {} [description]
-   * @param  {[type]} level      =             0  [description]
-   * @return {[type]}            [description]
+   * Recoreds the current description, depending on the initial configuration the item will either be sent to console, server and/or localstorage.
+   * @param  {String} description Description of the error or general information of the specific dunction body.
+   * @param  {Number} level Error level identification.
+   * @param  {Object=} stacktrace Current stacktrace
+   * @param  {Object=} data JOSN-object with additional data.
    */
-  record(message = '', level = this.levels.DEBUG, stacktrace = {}, data = {}) {
+  record(
+    description = '',
+    level = this.levels.DEBUG,
+    stacktrace = {},
+    data = {}
+  ) {
     if (this._env === Clio.ENV_MODES.PROD) {
-      return 0
+      this._send(new Log(...arguments));
     }
 
-    console.log(message, stacktrace, level)
-
-    return 0
+    console.log(description, stacktrace, level, data);
   }
 }
+
+Clio.levels = levels;
 
 export default Clio;
