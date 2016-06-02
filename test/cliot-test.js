@@ -26,7 +26,16 @@ describe('Clio', () => {
   });
 
   it('Record an error', () => {
-    throw 'Not implemented';
+    const log = clio.record('Test', Clio.levels.VERBOSE, 'stack', {
+      context: 'test issue'
+    });
+
+    expect(log).deep.equal({
+      description: 'Test',
+      stackTrace: 'stack',
+      level: 3,
+      data: { context: 'test issue' }
+    });
   });
 
   it('Validate all messageing levels', () => {

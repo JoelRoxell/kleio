@@ -1,6 +1,7 @@
 import levels from 'models/log-levels';
 import Log from 'models/log';
 import crypto from 'crypto';
+import { config } from '../config';
 
 /**
  * Core class which provides simplified logging capabilities.
@@ -8,6 +9,7 @@ import crypto from 'crypto';
 class Clio {
   /**
    * Constructor
+   *
    * @param  {String} socket comprised host name.
    * @param  {String} env environment configuration.
    */
@@ -72,27 +74,40 @@ class Clio {
     });
   }
 
+  _print() {}
+
+  _store() {}
+
   /**
    * Recoreds the current description, depending on the initial configuration the item will either be sent to console, server and/or localstorage.
+   *
    * @param  {String} description Description of the error or general information of the specific dunction body.
    * @param  {Number} level Error level identification.
-   * @param  {Object=} stacktrace Current stacktrace
-   * @param  {Object=} data JOSN-object with additional data.
+   * @param  {String} stacktrace Current stacktrace
+   * @param  {Object} data JOSN-object with additional data.
+   *
+   * @return {Log} The created log issue.
    */
   record(
     description = '',
-    level = this.levels.DEBUG,
+    level = Clio.levels.DEBUG,
     stacktrace = {},
     data = {}
   ) {
+    const log = new Log(description, level, stacktrace, data);
+
     if (this._env === Clio.ENV_MODES.PROD) {
-      this._send(new Log(...arguments));
+      this._send(log);
+    } else {
+      this._print(log);
     }
 
-    console.log(description, stacktrace, level, data);
+    return log;
   }
 }
 
 Clio.levels = levels;
+
+Clio.ENV_MODES = config.ENV_MODES;
 
 export default Clio;
