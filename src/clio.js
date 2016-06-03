@@ -1,7 +1,8 @@
-import levels from 'models/log-levels';
-import Log from 'models/log';
+import levels from './models/log-levels';
+import Log from './models/log';
 import crypto from 'crypto';
-import { config } from '../config';
+import config from '../config';
+import whatwgFetch from 'whatwg-fetch';
 
 /**
  * Core class which provides simplified logging capabilities.
@@ -78,18 +79,26 @@ class Clio {
   _defaultPostMethod(log, cb) {
     const payload = JSON.stringify(log);
 
-    fetch(`${this._host}:${this._port}`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(log)
-    }).then(res => {
-      if (typeof cb === 'function') {
-        cb(null, res);
+    try {
+      if (typeof fetch !== 'function') {
+        console.log('Fetch is undefined and needs to be ');
       }
-    }).catch(err => cb(err));
+
+      fetch(`${this._host}:${this._port}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(log)
+      }).then(res => {
+        if (typeof cb === 'function') {
+          cb(null, res);
+        }
+      }).catch(err => cb(err));
+    } catch (e) {
+      console.log(e);
+    }
 
     return payload;
   }
