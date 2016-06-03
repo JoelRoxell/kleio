@@ -1,1 +1,3 @@
-module.exports = require('./lib')
+import Clio from 'src';
+
+export default Clio;
