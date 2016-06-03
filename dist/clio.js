@@ -49,25 +49,15 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.loader = exports.Clio = undefined;
+	exports.Clio = undefined;
 	
 	var _clio = __webpack_require__(1);
 	
 	var _clio2 = _interopRequireDefault(_clio);
 	
-	var _log = __webpack_require__(27);
-	
-	var _log2 = _interopRequireDefault(_log);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var loader = function loader() {
-	  var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-	  return new _clio2.default(config.host, config.env);
-	};
-	
 	exports.Clio = _clio2.default;
-	exports.loader = loader;
 
 /***/ },
 /* 1 */
@@ -75,103 +65,215 @@
 
 	/* WEBPACK VAR INJECTION */(function(fetch) {'use strict';
 	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _logLevels = __webpack_require__(3);
 	
 	var _logLevels2 = _interopRequireDefault(_logLevels);
 	
-	var _crypto = __webpack_require__(4);
+	var _log = __webpack_require__(4);
+	
+	var _log2 = _interopRequireDefault(_log);
+	
+	var _crypto = __webpack_require__(5);
 	
 	var _crypto2 = _interopRequireDefault(_crypto);
+	
+	var _config = __webpack_require__(28);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
+	/**
+	 * Core class which provides simplified logging capabilities.
+	 */
+	
 	var Clio = function () {
+	  /**
+	   * Constructor
+	   *
+	   * @param  {String} socket comprised hostname.
+	   * @param  {String} env environment configuration.
+	   * @param  {Function} postMethod Allow send method to be replaced.
+	   */
+	
 	  function Clio() {
-	    var host = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+	    var socket = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
 	    var env = arguments.length <= 1 || arguments[1] === undefined ? 'dev' : arguments[1];
+	    var postMethod = arguments[2];
 	
 	    _classCallCheck(this, Clio);
 	
-	    this._levels = _logLevels2.default;
-	    this._env = env;
-	    this._host = host;
 	    this._id = _crypto2.default.randomBytes(8).toString('hex');
+	    this._env = env;
+	
+	    Object.assign(this, this._splitHostFromPath(socket));
+	
+	    // Allow server function to be replaced.
+	    this._postMethod = typeof postMethod === 'function' ? postMethod : this._defaultPostMethod;
 	  }
 	
 	  _createClass(Clio, [{
 	    key: '_splitHostFromPath',
-	    value: function _splitHostFromPath(url) {
-	      console.log(url);
 	
-	      return {
-	        host: url,
-	        path: url
-	      };
-	    }
-	  }, {
-	    key: 'print',
-	    value: function print() {
-	      var message = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-	      var stacktrace = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-	      var level = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
 	
-	      if (this._env === Clio.ENV_MODES.PROD) {
-	        return 0;
+	    /**
+	     * Splits the domain name from port number.
+	     * @param  {String} socket socket specification
+	     *
+	     * @return {Array} Array of the "divided" socket.
+	     */
+	    value: function _splitHostFromPath(socket) {
+	      var hostConfig = null,
+	          host = null,
+	          port = null;
+	
+	      if (typeof socket !== 'string') {
+	        throw new Error('Passted socket configuration must be of type string');
 	      }
 	
-	      console.log(message, stacktrace, level);
+	      hostConfig = socket.split(':');
+	      port = parseInt(hostConfig.pop(), 10);
+	      host = hostConfig.join(':');
 	
-	      return 0;
+	      if (typeof host !== 'string' || typeof port !== 'number') {
+	        throw new Error('Invalid host string was passed.');
+	      }
+	
+	      return {
+	        _host: host,
+	        _port: parseInt(port, 10)
+	      };
 	    }
+	
+	    /**
+	     * Default post method used to send log object to an external service,
+	     * may be overriden in constructor.
+	     *
+	     * @param  {Log}      log object.
+	     * @param  {Function} cb  callback.
+	     *
+	     * @return {Object}   payload sent to server.
+	     */
+	
 	  }, {
-	    key: 'send',
-	    value: function send(log, cb) {
-	      var postData = JSON.stringify(log);
+	    key: '_defaultPostMethod',
+	    value: function _defaultPostMethod(log, cb) {
+	      var payload = JSON.stringify(log);
 	
-	      fetch(this._host, 'GET').then(function (res) {
-	        console.log('received', res);
-	
+	      fetch(this._host + ':' + this._port, {
+	        method: 'POST',
+	        headers: {
+	          'Accept': 'application/json',
+	          'Content-Type': 'application/json'
+	        },
+	        body: JSON.stringify(log)
+	      }).then(function (res) {
 	        if (typeof cb === 'function') {
-	          cb();
+	          cb(null, res);
 	        }
 	      }).catch(function (err) {
-	        console.log(err);
-	        cb();
+	        return cb(err);
 	      });
+	
+	      return payload;
+	    }
+	
+	    /**
+	     * Prints log model information to console.
+	     *
+	     * @param  {Log} log object
+	     */
+	
+	  }, {
+	    key: '_print',
+	    value: function _print(log) {
+	      var levels = Clio.levels;
+	
+	      switch (log.level) {
+	        case levels.ERROR:
+	          console.error(log.description, log);
+	          break;
+	        case levels.WARN:
+	          console.warn(log.description, log);
+	          break;
+	        case levels.INFO:
+	          console.info(log.description, log);
+	          break;
+	        case levels.VERBOSE:
+	          console.log(log.description, log);
+	          break;
+	        case levels.DEBUG:
+	          console.debug(log.description, log);
+	          break;
+	        default:
+	          throw new Error('A log level must be provided');
+	      }
 	    }
 	  }, {
-	    key: 'collect',
-	    value: function collect(cb) {
-	      https.get('' + this._host + this._path, function (res) {
-	        var body = '';
+	    key: '_store',
+	    value: function _store() {}
+	    // TODO: Store log in localstorage.
 	
-	        // FIXME: Should use pipes
-	        res.on('data', function (chunk) {
-	          body += chunk;
-	        });
 	
-	        res.on('end', function () {
-	          if (typeof cb === 'function') {
-	            cb(body);
-	          }
-	        });
-	      });
+	    /**
+	     * Recoreds the current description, depending on the initial configuration the item will either be sent to console, server and/or localstorage.
+	     *
+	     * @param  {String} description Description of the error or general information of the specific dunction body.
+	     * @param  {Number} level Error level identification.
+	     * @param  {String} stacktrace Current stacktrace
+	     * @param  {Object} data JOSN-object with additional data.
+	     *
+	     * @return {Log} The created log issue.
+	     */
+	
+	  }, {
+	    key: 'record',
+	    value: function record() {
+	      var description = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+	      var level = arguments.length <= 1 || arguments[1] === undefined ? Clio.levels.DEBUG : arguments[1];
+	      var stacktrace = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+	      var data = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+	
+	      var log = new _log2.default(description, level, stacktrace, data);
+	
+	      if (this._env === Clio.ENV_MODES.PROD) {
+	        this._postMethod(log);
+	      } else {
+	        this._print(log);
+	      }
+	
+	      return log;
+	    }
+	  }, {
+	    key: 'host',
+	    get: function get() {
+	      return this._host;
+	    }
+	  }, {
+	    key: 'port',
+	    get: function get() {
+	      return this._port;
+	    }
+	  }, {
+	    key: 'levels',
+	    get: function get() {
+	      return this._levels;
 	    }
 	  }]);
 	
 	  return Clio;
 	}();
 	
-	Clio.ENV_MODES = {
-	  DEV: 'dev',
-	  PROD: 'prod'
-	};
+	Clio.levels = _logLevels2.default;
+	Clio.ENV_MODES = _config.config.ENV_MODES;
 	
-	module.exports = Clio;
+	exports.default = Clio;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ },
@@ -627,7 +729,10 @@
 
 	"use strict";
 	
-	module.exports = {
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var levels = {
 	  ERROR: 0,
 	  WARN: 1,
 	  INFO: 2,
@@ -635,12 +740,37 @@
 	  DEBUG: 4,
 	  SILLY: 5
 	};
+	
+	exports.default = levels;
 
 /***/ },
 /* 4 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Log = function Log(description, level, stackTrace, data) {
+	  _classCallCheck(this, Log);
+	
+	  this.description = description;
+	  this.stackTrace = stackTrace;
+	  this.level = level;
+	  this.data = data;
+	};
+	
+	exports.default = Log;
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {var rng = __webpack_require__(9)
+	/* WEBPACK VAR INJECTION */(function(Buffer) {var rng = __webpack_require__(10)
 	
 	function error () {
 	  var m = [].slice.call(arguments).join(' ')
@@ -651,9 +781,9 @@
 	    ].join('\n'))
 	}
 	
-	exports.createHash = __webpack_require__(11)
+	exports.createHash = __webpack_require__(12)
 	
-	exports.createHmac = __webpack_require__(24)
+	exports.createHmac = __webpack_require__(25)
 	
 	exports.randomBytes = function(size, callback) {
 	  if (callback && callback.call) {
@@ -674,7 +804,7 @@
 	  return ['sha1', 'sha256', 'sha512', 'md5', 'rmd160']
 	}
 	
-	var p = __webpack_require__(25)(exports)
+	var p = __webpack_require__(26)(exports)
 	exports.pbkdf2 = p.pbkdf2
 	exports.pbkdf2Sync = p.pbkdf2Sync
 	
@@ -694,10 +824,10 @@
 	  }
 	})
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).Buffer))
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer, global) {/*!
@@ -710,9 +840,9 @@
 	
 	'use strict'
 	
-	var base64 = __webpack_require__(6)
-	var ieee754 = __webpack_require__(7)
-	var isArray = __webpack_require__(8)
+	var base64 = __webpack_require__(7)
+	var ieee754 = __webpack_require__(8)
+	var isArray = __webpack_require__(9)
 	
 	exports.Buffer = Buffer
 	exports.SlowBuffer = SlowBuffer
@@ -2249,10 +2379,10 @@
 	  return i
 	}
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5).Buffer, (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).Buffer, (function() { return this; }())))
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -2382,7 +2512,7 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -2472,7 +2602,7 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports) {
 
 	var toString = {}.toString;
@@ -2483,13 +2613,13 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, Buffer) {(function() {
 	  var g = ('undefined' === typeof window ? global : window) || {}
 	  _crypto = (
-	    g.crypto || g.msCrypto || __webpack_require__(10)
+	    g.crypto || g.msCrypto || __webpack_require__(11)
 	  )
 	  module.exports = function(size) {
 	    // Modern Browsers
@@ -2513,22 +2643,22 @@
 	  }
 	}())
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(5).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(6).Buffer))
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(12)
+	/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(13)
 	
-	var md5 = toConstructor(__webpack_require__(21))
-	var rmd160 = toConstructor(__webpack_require__(23))
+	var md5 = toConstructor(__webpack_require__(22))
+	var rmd160 = toConstructor(__webpack_require__(24))
 	
 	function toConstructor (fn) {
 	  return function () {
@@ -2556,10 +2686,10 @@
 	  return createHash(alg)
 	}
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).Buffer))
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var exports = module.exports = function (alg) {
@@ -2568,16 +2698,16 @@
 	  return new Alg()
 	}
 	
-	var Buffer = __webpack_require__(5).Buffer
-	var Hash   = __webpack_require__(13)(Buffer)
+	var Buffer = __webpack_require__(6).Buffer
+	var Hash   = __webpack_require__(14)(Buffer)
 	
-	exports.sha1 = __webpack_require__(14)(Buffer, Hash)
-	exports.sha256 = __webpack_require__(19)(Buffer, Hash)
-	exports.sha512 = __webpack_require__(20)(Buffer, Hash)
+	exports.sha1 = __webpack_require__(15)(Buffer, Hash)
+	exports.sha256 = __webpack_require__(20)(Buffer, Hash)
+	exports.sha512 = __webpack_require__(21)(Buffer, Hash)
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	module.exports = function (Buffer) {
@@ -2660,7 +2790,7 @@
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -2672,7 +2802,7 @@
 	 * See http://pajhome.org.uk/crypt/md5 for details.
 	 */
 	
-	var inherits = __webpack_require__(15).inherits
+	var inherits = __webpack_require__(16).inherits
 	
 	module.exports = function (Buffer, Hash) {
 	
@@ -2804,7 +2934,7 @@
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -3332,7 +3462,7 @@
 	}
 	exports.isPrimitive = isPrimitive;
 	
-	exports.isBuffer = __webpack_require__(17);
+	exports.isBuffer = __webpack_require__(18);
 	
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -3376,7 +3506,7 @@
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(18);
+	exports.inherits = __webpack_require__(19);
 	
 	exports._extend = function(origin, add) {
 	  // Don't do anything if add isn't an object
@@ -3394,10 +3524,10 @@
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(16)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(17)))
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -3497,7 +3627,7 @@
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	module.exports = function isBuffer(arg) {
@@ -3508,7 +3638,7 @@
 	}
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	if (typeof Object.create === 'function') {
@@ -3537,7 +3667,7 @@
 
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -3549,7 +3679,7 @@
 	 *
 	 */
 	
-	var inherits = __webpack_require__(15).inherits
+	var inherits = __webpack_require__(16).inherits
 	
 	module.exports = function (Buffer, Hash) {
 	
@@ -3690,10 +3820,10 @@
 
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var inherits = __webpack_require__(15).inherits
+	var inherits = __webpack_require__(16).inherits
 	
 	module.exports = function (Buffer, Hash) {
 	  var K = [
@@ -3940,7 +4070,7 @@
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -3952,7 +4082,7 @@
 	 * See http://pajhome.org.uk/crypt/md5 for more info.
 	 */
 	
-	var helpers = __webpack_require__(22);
+	var helpers = __webpack_require__(23);
 	
 	/*
 	 * Calculate the MD5 of an array of little-endian words, and a bit length
@@ -4101,7 +4231,7 @@
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {var intSize = 4;
@@ -4139,10 +4269,10 @@
 	
 	module.exports = { hash: hash };
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).Buffer))
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {
@@ -4351,13 +4481,13 @@
 	
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).Buffer))
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(11)
+	/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(12)
 	
 	var zeroBuffer = new Buffer(128)
 	zeroBuffer.fill(0)
@@ -4401,13 +4531,13 @@
 	}
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).Buffer))
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var pbkdf2Export = __webpack_require__(26)
+	var pbkdf2Export = __webpack_require__(27)
 	
 	module.exports = function (crypto, exports) {
 	  exports = exports || {}
@@ -4422,7 +4552,7 @@
 
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {module.exports = function(crypto) {
@@ -4510,30 +4640,24 @@
 	  }
 	}
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).Buffer))
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var LogModel = function LogModel(description, stackTrace, level, data) {
-	  _classCallCheck(this, LogModel);
-	
-	  this.description = description;
-	  this.stackTrace = stackTrace;
-	  this.level = level;
-	  this.data = data;
+	var config = exports.config = {
+	  ENV_MODES: {
+	    PROD: 'PROD',
+	    DEV: 'DEV',
+	    SILENT: 'SILENT'
+	  }
 	};
-	
-	var Log = exports.Log = LogModel;
 
 /***/ }
 /******/ ]);

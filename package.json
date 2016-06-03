@@ -1,6 +1,6 @@
 {
   "name": "clio",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Simplifies login during development and production phases",
   "main": "index.js",
   "scripts": {
