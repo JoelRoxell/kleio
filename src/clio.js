@@ -67,17 +67,6 @@ class Clio {
   }
 
   /**
-   * Send the passed log object to an external service.
-   *
-   * @param  {Log}   log object.
-   * @param  {Function} postMethod use the post function specified by constructor.
-   * @param  {Function} cb  callback.
-   */
-  _sendWrapper(log, postMethod, cb) {
-    postMethod(log, cb);
-  }
-
-  /**
    * Default post method used to send log object to an external service,
    * may be overriden in constructor.
    *
@@ -89,7 +78,12 @@ class Clio {
   _defaultPostMethod(log, cb) {
     const payload = JSON.stringify(log);
 
-    fetch(this._host, 'POST', {
+    fetch(`${this._host}:${this._port}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(log)
     }).then(res => {
       if (typeof cb === 'function') {

@@ -26,7 +26,7 @@ describe('Clio', () => {
   });
 
   it('Record an error', () => {
-    let logger = new Clio('http://logger.dev/stack:80', Clio.ENV_MODES.PROD, log => {
+    let logger = new Clio('https://logger.dev/stack:80', Clio.ENV_MODES.PROD, log => {
       // Perform server communication...
       return log;
     });
@@ -52,10 +52,6 @@ describe('Clio', () => {
       DEBUG: 4,
       SILLY: 5
     });
-  });
-
-  it('Store stacktrace in localstorage', () => {
-    throw new Error('Not implemented');
   });
 
   describe('Log', () => {

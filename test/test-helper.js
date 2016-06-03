@@ -9,4 +9,4 @@ global.document = jsdom.jsdom(`
   `);
 global.window = global.document.defaultView;
 
-export { expect }
+export { expect };
