@@ -2,7 +2,7 @@ import levels from './models/log-levels';
 import Log from './models/log';
 import crypto from 'crypto';
 import config from '../config';
-import whatwgFetch from 'whatwg-fetch';
+import whatwgFetch from 'whatwg-fetch'; // eslint-disable-line
 
 /**
  * Core class which provides simplified logging capabilities.
@@ -80,24 +80,24 @@ class Clio {
     const payload = JSON.stringify(log);
 
     try {
-      if (typeof fetch !== 'function') {
-        console.log('Fetch is undefined and needs to be ');
-      }
-
       fetch(`${this._host}:${this._port}`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(log)
+        body: payload
       }).then(res => {
         if (typeof cb === 'function') {
           cb(null, res);
         }
-      }).catch(err => cb(err));
+      }).catch(err => {
+        if (typeof cb === 'function') {
+          cb(err);
+        }
+      });
     } catch (e) {
-      console.log(e);
+      throw e;
     }
 
     return payload;
@@ -143,6 +143,7 @@ class Clio {
    * @param  {Number} level Error level identification.
    * @param  {String} stacktrace Current stacktrace
    * @param  {Object} data JOSN-object with additional data.
+   * @param  {Funciton} cb callback
    *
    * @return {Log} The created log issue.
    */
@@ -150,12 +151,13 @@ class Clio {
     description = '',
     level = Clio.levels.DEBUG,
     stacktrace = {},
-    data = {}
+    data = {},
+    cb
   ) {
     const log = new Log(description, level, stacktrace, data);
 
     if (this._env === Clio.ENV_MODES.PROD) {
-      this._postMethod(log);
+      this._postMethod(log, cb);
     } else {
       this._print(log);
     }

@@ -1,13 +1,14 @@
 {
-  "name": "clio",
-  "version": "0.1.0",
+  "name": "kleio",
+  "version": "0.1.1",
   "description": "Simplifies login during development and production phases",
   "main": "./dist/index.js",
   "scripts": {
     "dev": "webpack --progress --colors --watch --config config/webpack.config.js",
     "test": "NODE_PATH=./src mocha ./test/**/*.js --compilers js:babel-core/register --recursive",
     "test-watch": "NODE_PATH=./src mocha ./test/**/*.js --compilers js:babel-core/register --recursive --watch",
-    "build": "babel src --presets babel-preset-es2015 --out-dir dist"
+    "build": "babel src --presets babel-preset-es2015 --out-dir dist",
+    "prepublish": "npm run build"
   },
   "author": "Joel Roxell (https://github.com/JoelRoxell)",
   "license": "MIT",
