@@ -15,7 +15,7 @@ const clio = new Clio('http://remote.server:8080');
 ```javascript
 import Clio from 'clio';
 
-const clio = new Clio('https://remote.server/stack:443', log => {
+const clio = new Clio('https://remote.server/log', log => {
   // Perform server communication...
 });
 ```

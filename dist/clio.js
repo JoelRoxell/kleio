@@ -24,9 +24,13 @@ var _config2 = _interopRequireDefault(_config);
 
 var _whatwgFetch = require('whatwg-fetch');
 
+var _whatwgFetch2 = _interopRequireDefault(_whatwgFetch);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// eslint-disable-line
 
 /**
  * Core class which provides simplified logging capabilities.
@@ -104,21 +108,27 @@ var Clio = function () {
     key: '_defaultPostMethod',
     value: function _defaultPostMethod(log, cb) {
       var payload = JSON.stringify(log);
-      console.log(_whatwgFetch.fetch);
-      (0, _whatwgFetch.fetch)(this._host + ':' + this._port, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(log)
-      }).then(function (res) {
-        if (typeof cb === 'function') {
-          cb(null, res);
-        }
-      }).catch(function (err) {
-        return cb(err);
-      });
+
+      try {
+        fetch(this._host + ':' + this._port, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: payload
+        }).then(function (res) {
+          if (typeof cb === 'function') {
+            cb(null, res);
+          }
+        }).catch(function (err) {
+          if (typeof cb === 'function') {
+            cb(err);
+          }
+        });
+      } catch (e) {
+        throw e;
+      }
 
       return payload;
     }
@@ -167,6 +177,7 @@ var Clio = function () {
      * @param  {Number} level Error level identification.
      * @param  {String} stacktrace Current stacktrace
      * @param  {Object} data JOSN-object with additional data.
+     * @param  {Funciton} cb callback
      *
      * @return {Log} The created log issue.
      */
@@ -178,11 +189,12 @@ var Clio = function () {
       var level = arguments.length <= 1 || arguments[1] === undefined ? Clio.levels.DEBUG : arguments[1];
       var stacktrace = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       var data = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+      var cb = arguments[4];
 
       var log = new _log2.default(description, level, stacktrace, data);
 
       if (this._env === Clio.ENV_MODES.PROD) {
-        this._postMethod(log);
+        this._postMethod(log, cb);
       } else {
         this._print(log);
       }
