@@ -22,21 +22,26 @@ const kleio = new Kleio('https://remote.server/log', log => {
 
 
 ## Methods
-#### `record(description, level, stacktrace, data)`
+#### `record(description, level, stacktrace, data, cb)`
 
 Collects log information and sends it to console and/or the specified external service, depending on `env` configuration.
 
 ```javascript
 kleio.record(
   'Log description',
-  new Error('A stacktrace').stack,
   Kleio.levels.ERROR,
-  optionalData
+  new Error('A stacktrace').stack,
+  optionalData,
+  cb
 )
 ```
 
 ## Installation
 `npm install kleio --save`
+
+## Tests
+
+`npm test`
 
 ## API Reference
 ### Log model
@@ -62,10 +67,6 @@ Log {
   SILLY: 5
 }
 ```
-
-## Tests
-
-`npm test`
 
 ## License
 
