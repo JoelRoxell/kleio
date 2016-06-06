@@ -7,6 +7,7 @@
     "dev": "webpack --progress --colors --watch --config config/webpack.config.js",
     "test": "NODE_PATH=./src mocha ./test/**/*.js --compilers js:babel-core/register --recursive",
     "test-watch": "NODE_PATH=./src mocha ./test/**/*.js --compilers js:babel-core/register --recursive --watch",
+    "clean": "rm -r ./dist/*",
     "build": "babel src --presets babel-preset-es2015 --out-dir dist",
     "prepublish": "npm run build"
   },

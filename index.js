@@ -1,3 +1,3 @@
-import Clio from 'src';
+import Kleio from 'src';
 
-export default Clio;
+export default Kleio;

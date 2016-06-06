@@ -7,7 +7,7 @@ import whatwgFetch from 'whatwg-fetch'; // eslint-disable-line
 /**
  * Core class which provides simplified logging capabilities.
  */
-class Clio {
+class Kleio {
   /**
    * Constructor
    *
@@ -83,8 +83,8 @@ class Clio {
       fetch(`${this._host}:${this._port}`, {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'Accept': 'Application/json',
+          'Content-Type': 'Application/json'
         },
         body: payload
       }).then(res => {
@@ -109,7 +109,7 @@ class Clio {
    * @param  {Log} log object
    */
   _print(log) {
-    const levels = Clio.levels;
+    const levels = Kleio.levels;
 
     switch (log.level) {
       case levels.ERROR:
@@ -149,14 +149,14 @@ class Clio {
    */
   record(
     description = '',
-    level = Clio.levels.DEBUG,
+    level = Kleio.levels.DEBUG,
     stacktrace = {},
     data = {},
     cb
   ) {
     const log = new Log(description, level, stacktrace, data);
 
-    if (this._env === Clio.ENV_MODES.PROD) {
+    if (this._env === Kleio.ENV_MODES.PROD) {
       this._postMethod(log, cb);
     } else {
       this._print(log);
@@ -166,7 +166,7 @@ class Clio {
   }
 }
 
-Clio.levels = levels;
-Clio.ENV_MODES = config.ENV_MODES;
+Kleio.levels = levels;
+Kleio.ENV_MODES = config.ENV_MODES;
 
-export default Clio;
+export default Kleio;

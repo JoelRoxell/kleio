@@ -1,21 +1,21 @@
-## Clio
+## Kleio
 
-Clio is a minimal logger used to simplify debugging and error management during the development as well as production phase. Depending on `env` Clio either logs to console or to a remote host.
+Kleio is a minimal logger used to simplify debugging and error management during the development as well as production phase. Depending on `env` Kleio either logs to console or to a remote host.
 
 ## Code Example
 
 ### Instantiation
 ```javascript
-import Clio from 'clio';
+import Kleio from 'kleio';
 
-const clio = new Clio('http://remote.server:8080');
+const kleio = new Kleio('http://remote.server:8080');
 ```
 
 ### Provide a custom post method
 ```javascript
-import Clio from 'clio';
+import Kleio from 'kleio';
 
-const clio = new Clio('https://remote.server/log', log => {
+const kleio = new Kleio('https://remote.server/log', log => {
   // Post implementation...
 });
 ```
@@ -27,16 +27,16 @@ const clio = new Clio('https://remote.server/log', log => {
 Collects log information and sends it to console and/or the specified external service, depending on `env` configuration.
 
 ```javascript
-clio.record(
+kleio.record(
   'Log description',
   new Error('A stacktrace').stack,
-  Clio.levels.ERROR,
+  Kleio.levels.ERROR,
   optionalData
 )
 ```
 
 ## Installation
-`npm install clio --save`
+`npm install kleio --save`
 
 ## API Reference
 ### Log model

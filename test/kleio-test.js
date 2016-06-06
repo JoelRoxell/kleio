@@ -1,37 +1,38 @@
 /* eslint no-unused-expressions: "off" */
 import { expect } from './test-helper';
-import Clio from 'clio';
+import Kleio from 'kleio';
 import Log from 'models/log';
+import distKleio from '../dist';
 
 // Use to describe to group together similar tests.
-describe('Clio', () => {
-  let clio = null;
+describe('Kleio', () => {
+  let kleio = null;
 
   beforeEach(() => {
     const socket = 'http://localhost:80',
         env = 'dev';
 
-    clio = new Clio(socket, env);
+    kleio = new Kleio(socket, env);
   });
 
   // Use it to test a single attribute of a target.
   it('Instantiate logger correctly', () => {
     // Use expect to make an assertion about a target
-    expect(clio).to.exist;
+    expect(kleio).to.exist;
   });
 
   it('Separate host string', () => {
-    expect(clio.host).to.contain('http://localhost');
-    expect(clio.port).to.equal(80);
+    expect(kleio.host).to.contain('http://localhost');
+    expect(kleio.port).to.equal(80);
   });
 
   it('Record an error', () => {
-    let logger = new Clio('https://logger.dev/stack:80', Clio.ENV_MODES.PROD, log => {
+    let logger = new Kleio('https://logger.dev/stack:80', Kleio.ENV_MODES.PROD, log => {
       // Perform server communication...
       return log;
     });
 
-    const log = logger.record('Test', Clio.levels.VERBOSE, 'stack', {
+    const log = logger.record('Test', Kleio.levels.VERBOSE, 'stack', {
       context: 'test issue'
     });
 
@@ -44,7 +45,7 @@ describe('Clio', () => {
   });
 
   it('Validate all messageing levels', () => {
-    expect(Clio.levels).to.deep.equal({
+    expect(Kleio.levels).to.deep.equal({
       ERROR: 0,
       WARN: 1,
       INFO: 2,
@@ -59,7 +60,7 @@ describe('Clio', () => {
       const error = `Error: stackTrace\n at Context.<anonymous>`,
           log = new Log(
             'Test log init',
-            Clio.levels.ERROR,
+            Kleio.levels.ERROR,
             error,
             { additionalData: true }
           );
@@ -70,6 +71,13 @@ describe('Clio', () => {
         stackTrace: error,
         data: { additionalData: true }
       });
+    });
+  });
+
+  describe('Export', () => {
+    it('Eport kleio dist properly', () => {
+      expect(Object.getPrototypeOf(Kleio))
+        .to.equal(Object.getPrototypeOf(distKleio));
     });
   });
 });

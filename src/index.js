@@ -1,3 +1,3 @@
-import Clio from './clio';
+import Kleio from './kleio';
 
-export { Clio };
+export default Kleio;

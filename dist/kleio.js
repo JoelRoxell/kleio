@@ -36,7 +36,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Core class which provides simplified logging capabilities.
  */
 
-var Clio = function () {
+var Kleio = function () {
   /**
    * Constructor
    *
@@ -45,12 +45,12 @@ var Clio = function () {
    * @param  {Function} postMethod Allow send method to be replaced.
    */
 
-  function Clio() {
+  function Kleio() {
     var socket = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
     var env = arguments.length <= 1 || arguments[1] === undefined ? 'dev' : arguments[1];
     var postMethod = arguments[2];
 
-    _classCallCheck(this, Clio);
+    _classCallCheck(this, Kleio);
 
     this._id = _crypto2.default.randomBytes(8).toString('hex');
     this._env = env;
@@ -61,7 +61,7 @@ var Clio = function () {
     this._postMethod = typeof postMethod === 'function' ? postMethod : this._defaultPostMethod;
   }
 
-  _createClass(Clio, [{
+  _createClass(Kleio, [{
     key: '_splitHostFromPath',
 
 
@@ -113,8 +113,8 @@ var Clio = function () {
         fetch(this._host + ':' + this._port, {
           method: 'POST',
           headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Accept': 'Application/json',
+            'Content-Type': 'Application/json'
           },
           body: payload
         }).then(function (res) {
@@ -142,7 +142,7 @@ var Clio = function () {
   }, {
     key: '_print',
     value: function _print(log) {
-      var levels = Clio.levels;
+      var levels = Kleio.levels;
 
       switch (log.level) {
         case levels.ERROR:
@@ -186,14 +186,14 @@ var Clio = function () {
     key: 'record',
     value: function record() {
       var description = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-      var level = arguments.length <= 1 || arguments[1] === undefined ? Clio.levels.DEBUG : arguments[1];
+      var level = arguments.length <= 1 || arguments[1] === undefined ? Kleio.levels.DEBUG : arguments[1];
       var stacktrace = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
       var data = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
       var cb = arguments[4];
 
       var log = new _log2.default(description, level, stacktrace, data);
 
-      if (this._env === Clio.ENV_MODES.PROD) {
+      if (this._env === Kleio.ENV_MODES.PROD) {
         this._postMethod(log, cb);
       } else {
         this._print(log);
@@ -218,10 +218,10 @@ var Clio = function () {
     }
   }]);
 
-  return Clio;
+  return Kleio;
 }();
 
-Clio.levels = _logLevels2.default;
-Clio.ENV_MODES = _config2.default.ENV_MODES;
+Kleio.levels = _logLevels2.default;
+Kleio.ENV_MODES = _config2.default.ENV_MODES;
 
-exports.default = Clio;
+exports.default = Kleio;

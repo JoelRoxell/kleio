@@ -3,12 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Clio = undefined;
 
-var _clio = require('./clio');
+var _kleio = require('./kleio');
 
-var _clio2 = _interopRequireDefault(_clio);
+var _kleio2 = _interopRequireDefault(_kleio);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.Clio = _clio2.default;
+exports.default = _kleio2.default;
