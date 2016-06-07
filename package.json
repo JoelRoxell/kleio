@@ -13,6 +13,7 @@
   },
   "author": "Joel Roxell (https://github.com/JoelRoxell)",
   "license": "MIT",
+  "homepage": "https://github.com/JoelRoxell/Kleio",
   "devDependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.1",
