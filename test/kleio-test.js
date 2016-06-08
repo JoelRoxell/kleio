@@ -51,7 +51,8 @@ describe('Kleio', () => {
           description: 'description',
           level: Kleio.levels.VERBOSE,
           stackTrace: 'stack',
-          data: { context: 'test issue' }
+          data: { context: 'test issue' },
+          userAgent: navigator.userAgent
         }
       }
     });
@@ -92,6 +93,7 @@ describe('Kleio', () => {
           description: 'log description',
           level: Kleio.levels.INFO,
           stackTrace: 'log stack',
+          userAgent: navigator.userAgent,
           data: {
             additionalData: 'test issue #2'
           }

@@ -9,4 +9,6 @@ global.document = jsdom.jsdom(`
   `);
 global.window = global.document.defaultView;
 
+global.navigator = window.navigator = `Node.js (${process.platform}; U; rv:${process.version}) AppleWebKit/537.36 (KHTML, like Gecko)`; // eslint-disable-line
+
 export { expect };

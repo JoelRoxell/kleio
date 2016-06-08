@@ -150,7 +150,10 @@ class Kleio {
       data: {
         type: 'log',
         id: this._id,
-        attributes: { ...log }
+        attributes: {
+          userAgent: navigator.userAgent,
+          ...log
+        }
       }
     };
   }
