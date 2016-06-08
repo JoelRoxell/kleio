@@ -4,6 +4,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _logLevels = require('./models/log-levels');
@@ -95,6 +97,43 @@ var Kleio = function () {
     }
 
     /**
+     * Prints log model information to console.
+     *
+     * @param  {Log} log object
+     */
+
+  }, {
+    key: '_print',
+    value: function _print(log) {
+      var levels = Kleio.levels;
+
+      switch (log.level) {
+        case levels.ERROR:
+          console.error(log.description, log);
+          break;
+        case levels.WARN:
+          console.warn(log.description, log);
+          break;
+        case levels.INFO:
+          console.info(log.description, log);
+          break;
+        case levels.VERBOSE:
+          console.log(log.description, log);
+          break;
+        case levels.DEBUG:
+          console.debug(log.description, log);
+          break;
+        default:
+          throw new Error('A log level must be provided');
+      }
+    }
+  }, {
+    key: '_store',
+    value: function _store() {}
+    // TODO: Store log in localstorage.
+
+
+    /**
      * Default post method used to send log object to an external service,
      * may be overriden in constructor.
      *
@@ -134,45 +173,29 @@ var Kleio = function () {
     }
 
     /**
-     * Prints log model information to console.
-     *
-     * @param  {Log} log object
+     * Prase the log model to a correct format based on http://jsonapi.org/
+     * @param  {Log} log data model
+     * @return {Object}  parsed JSON object
      */
 
   }, {
-    key: '_print',
-    value: function _print(log) {
-      var levels = Kleio.levels;
-
-      switch (log.level) {
-        case levels.ERROR:
-          console.error(log.description, log);
-          break;
-        case levels.WARN:
-          console.warn(log.description, log);
-          break;
-        case levels.INFO:
-          console.info(log.description, log);
-          break;
-        case levels.VERBOSE:
-          console.log(log.description, log);
-          break;
-        case levels.DEBUG:
-          console.debug(log.description, log);
-          break;
-        default:
-          throw new Error('A log level must be provided');
-      }
+    key: '_prepareApiLogModel',
+    value: function _prepareApiLogModel(log) {
+      return {
+        data: {
+          type: 'log',
+          id: this._id,
+          attributes: _extends({
+            userAgent: navigator.userAgent
+          }, log)
+        }
+      };
     }
-  }, {
-    key: '_store',
-    value: function _store() {}
-    // TODO: Store log in localstorage.
-
 
     /**
      * Recoreds the current description, depending on the initial configuration the item will either be sent to console, server and/or localstorage.
      *
+     * @param  {String}  title log title
      * @param  {String} description Description of the error or general information of the specific dunction body.
      * @param  {Number} level Error level identification.
      * @param  {String} stacktrace Current stacktrace
@@ -184,14 +207,16 @@ var Kleio = function () {
 
   }, {
     key: 'record',
-    value: function record() {
-      var description = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-      var level = arguments.length <= 1 || arguments[1] === undefined ? Kleio.levels.DEBUG : arguments[1];
-      var stacktrace = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-      var data = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
-      var cb = arguments[4];
+    value: function record(title) {
+      var description = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+      var level = arguments.length <= 2 || arguments[2] === undefined ? Kleio.levels.DEBUG : arguments[2];
+      var stacktrace = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+      var data = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
+      var cb = arguments[5];
 
-      var log = new _log2.default(description, level, stacktrace, data);
+      var log = new _log2.default(title, description, level, stacktrace, data);
+
+      log = this._prepareApiLogModel(log);
 
       if (this._env === Kleio.ENV_MODES.PROD) {
         this._postMethod(log, cb);
@@ -200,6 +225,11 @@ var Kleio = function () {
       }
 
       return log;
+    }
+  }, {
+    key: 'id',
+    get: function get() {
+      return this._id;
     }
   }, {
     key: 'host',
