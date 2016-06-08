@@ -1,4 +1,5 @@
 ## Kleio
+[![Build Status](https://travis-ci.org/JoelRoxell/Kleio.svg?branch=master)](https://travis-ci.org/JoelRoxell/Kleio)
 
 Kleio is a minimal logger used to simplify debugging and error management during the development as well as production phase. Depending on `env` Kleio either logs to console or to a remote host.
 
