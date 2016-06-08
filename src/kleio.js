@@ -26,6 +26,10 @@ class Kleio {
       postMethod : this._defaultPostMethod;
   }
 
+  get id() {
+    return this._id;
+  }
+
   get host() {
     return this._host;
   }
@@ -68,6 +72,39 @@ class Kleio {
   }
 
   /**
+   * Prints log model information to console.
+   *
+   * @param  {Log} log object
+   */
+  _print(log) {
+    const levels = Kleio.levels;
+
+    switch (log.level) {
+      case levels.ERROR:
+        console.error(log.description, log);
+        break;
+      case levels.WARN:
+        console.warn(log.description, log);
+        break;
+      case levels.INFO:
+        console.info(log.description, log);
+        break;
+      case levels.VERBOSE:
+        console.log(log.description, log);
+        break;
+      case levels.DEBUG:
+        console.debug(log.description, log);
+        break;
+      default:
+        throw new Error('A log level must be provided');
+    }
+  }
+
+  _store() {
+    // TODO: Store log in localstorage.
+  }
+
+  /**
    * Default post method used to send log object to an external service,
    * may be overriden in constructor.
    *
@@ -104,41 +141,24 @@ class Kleio {
   }
 
   /**
-   * Prints log model information to console.
-   *
-   * @param  {Log} log object
+   * Prase the log model to a correct format based on http://jsonapi.org/
+   * @param  {Log} log data model
+   * @return {Object}  parsed JSON object
    */
-  _print(log) {
-    const levels = Kleio.levels;
-
-    switch (log.level) {
-      case levels.ERROR:
-        console.error(log.description, log);
-        break;
-      case levels.WARN:
-        console.warn(log.description, log);
-        break;
-      case levels.INFO:
-        console.info(log.description, log);
-        break;
-      case levels.VERBOSE:
-        console.log(log.description, log);
-        break;
-      case levels.DEBUG:
-        console.debug(log.description, log);
-        break;
-      default:
-        throw new Error('A log level must be provided');
-    }
-  }
-
-  _store() {
-    // TODO: Store log in localstorage.
+  _prepareApiLogModel(log) {
+    return {
+      data: {
+        type: 'log',
+        id: this._id,
+        attributes: { ...log }
+      }
+    };
   }
 
   /**
    * Recoreds the current description, depending on the initial configuration the item will either be sent to console, server and/or localstorage.
    *
+   * @param  {String}  title log title
    * @param  {String} description Description of the error or general information of the specific dunction body.
    * @param  {Number} level Error level identification.
    * @param  {String} stacktrace Current stacktrace
@@ -148,13 +168,16 @@ class Kleio {
    * @return {Log} The created log issue.
    */
   record(
+    title,
     description = '',
     level = Kleio.levels.DEBUG,
     stacktrace = {},
     data = {},
     cb
   ) {
-    const log = new Log(description, level, stacktrace, data);
+    let log = new Log(title, description, level, stacktrace, data);
+
+    log = this._prepareApiLogModel(log);
 
     if (this._env === Kleio.ENV_MODES.PROD) {
       this._postMethod(log, cb);

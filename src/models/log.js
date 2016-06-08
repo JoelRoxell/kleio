@@ -1,8 +1,9 @@
 class Log {
-  constructor(description, level, stackTrace, data) {
+  constructor(title, description, level, stackTrace, data) {
+    this.title = title;
     this.description = description;
-    this.stackTrace = stackTrace;
     this.level = level;
+    this.stackTrace = stackTrace;
     this.data = data;
   }
 }

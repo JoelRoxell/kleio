@@ -16,35 +16,48 @@ describe('Kleio', () => {
   });
 
   // Use it to test a single attribute of a target.
-  it('Instantiate logger correctly', () => {
+  it('Instantiate logger correctly.', () => {
     // Use expect to make an assertion about a target
     expect(kleio).to.exist;
   });
 
-  it('Separate host string', () => {
+  it('Separate host string.', () => {
     expect(kleio.host).to.contain('http://localhost');
     expect(kleio.port).to.equal(80);
   });
 
-  it('Record an error', () => {
+  it('Record an error.', () => {
     let logger = new Kleio('https://logger.dev/stack:80', Kleio.ENV_MODES.PROD, log => {
       // Perform server communication...
       return log;
     });
 
-    const log = logger.record('Test', Kleio.levels.VERBOSE, 'stack', {
-      context: 'test issue'
-    });
+    const log = logger.record(
+      'Title',
+      'description',
+      Kleio.levels.VERBOSE,
+      'stack',
+      {
+        context: 'test issue'
+      }
+    );
 
     expect(log).deep.equal({
-      description: 'Test',
-      stackTrace: 'stack',
-      level: 3,
-      data: { context: 'test issue' }
+      data: {
+        type: 'log',
+        id: logger.id,
+        attributes: {
+          title: 'Title',
+          description: 'description',
+          level: Kleio.levels.VERBOSE,
+          stackTrace: 'stack',
+          data: { context: 'test issue' }
+        }
+      }
     });
   });
 
-  it('Validate all messageing levels', () => {
+  it('Validate all messageing levels.', () => {
     expect(Kleio.levels).to.deep.equal({
       ERROR: 0,
       WARN: 1,
@@ -55,10 +68,43 @@ describe('Kleio', () => {
     });
   });
 
+  it('Compose a post log object based on <json:api> standard.', () => {
+    let logger = new Kleio('https://logger.dev/stack:80', Kleio.ENV_MODES.PROD, log => {
+      // Perform server communication...
+      return log;
+    });
+
+    const log = logger.record(
+      'Log title',
+      'log description',
+      Kleio.levels.INFO,
+      'log stack', {
+        additionalData: 'test issue #2'
+      }
+    );
+
+    expect(log).deep.equal({
+      data: {
+        type: 'log',
+        id: logger.id,
+        attributes: {
+          title: 'Log title',
+          description: 'log description',
+          level: Kleio.levels.INFO,
+          stackTrace: 'log stack',
+          data: {
+            additionalData: 'test issue #2'
+          }
+        }
+      }
+    });
+  });
+
   describe('Log', () => {
-    it('Instantiate model', () => {
+    it('Instantiate model.', () => {
       const error = `Error: stackTrace\n at Context.<anonymous>`,
           log = new Log(
+            'Test title',
             'Test log init',
             Kleio.levels.ERROR,
             error,
@@ -66,6 +112,7 @@ describe('Kleio', () => {
           );
 
       expect(log).deep.equal({
+        title: 'Test title',
         description: 'Test log init',
         level: 0,
         stackTrace: error,
@@ -75,7 +122,7 @@ describe('Kleio', () => {
   });
 
   describe('Export', () => {
-    it('Eport kleio dist properly', () => {
+    it('Eport kleio dist properly.', () => {
       expect(Object.getPrototypeOf(Kleio))
         .to.equal(Object.getPrototypeOf(distKleio));
     });
