@@ -57,7 +57,7 @@ var Kleio = function () {
     this._id = _crypto2.default.randomBytes(8).toString('hex');
     this._env = env;
 
-    Object.assign(this, this._splitHostFromPath(socket));
+    _extends(this, this._splitHostFromPath(socket));
 
     // Allow server function to be replaced.
     this._postMethod = typeof postMethod === 'function' ? postMethod : this._defaultPostMethod;
