@@ -1,7 +1,14 @@
 ## Kleio
 [![Build Status](https://travis-ci.org/JoelRoxell/Kleio.svg?branch=master)](https://travis-ci.org/JoelRoxell/Kleio)
 
-Kleio is a minimal logger used to simplify debugging and error management during the development as well as production phase. Depending on `env` Kleio either logs to console or to a remote host.
+Kleio is a minimal client side logger with the purpose to simplify debugging and error management during production as well as development phases. In essence Klio provides a common error-level system based on `npm` logging levels and the simplicity to quickly post debugging information to a remote host.
+
+## Installation
+`npm install kleio --save`
+
+## Tests
+
+`npm test`
 
 ## Code Example
 
@@ -21,14 +28,30 @@ const kleio = new Kleio('https://remote.server/log', log => {
 });
 ```
 
+## API Reference
 
-## Methods
-#### `record(description, level, stacktrace, data, cb)`
+### Environment
+Define environment by using either `process.env` or `Kleio.ENV_MODES`
+```javascript
+const kleio = new Kleio('http://remote.server:8080', Kleio.ENV_MODES.PROD);
+```
 
-Collects log information and sends it to console and/or the specified external service, depending on `env` configuration.
+```javascript
+  ENV_MODES: {
+  PROD: 'PROD',
+  DEV: 'DEV',
+  SILENT: 'SILENT'
+}
+```
+
+### Methods
+#### `record(title, description, level, stacktrace, data, cb)`
+
+Collect information and send it to console and/or the specified external service, depending on `env` configuration.
 
 ```javascript
 kleio.record(
+  'Log title',
   'Log description',
   Kleio.levels.ERROR,
   new Error('A stacktrace').stack,
@@ -37,14 +60,6 @@ kleio.record(
 )
 ```
 
-## Installation
-`npm install kleio --save`
-
-## Tests
-
-`npm test`
-
-## API Reference
 ### Log model
 Posted to the remote server and/or local storage.
 ```javascript
@@ -58,6 +73,7 @@ Log {
 ```
 
 ### Log levels
+Levels are defined using integer values 0(high) to 5(low).
 ```javascript
 {
   ERROR: 0,

@@ -81,22 +81,22 @@ class Kleio {
 
     switch (log.level) {
       case levels.ERROR:
-        console.error(log.description, log);
+        console.error(log.title, log);
         break;
       case levels.WARN:
-        console.warn(log.description, log);
+        console.warn(log.title, log);
         break;
       case levels.INFO:
-        console.info(log.description, log);
+        console.info(log.title, log);
         break;
       case levels.VERBOSE:
-        console.log(log.description, log);
+        console.log(log.title, log);
         break;
       case levels.DEBUG:
-        console.debug(log.description, log);
+        console.debug(log.title, log);
         break;
       default:
-        throw new Error('A log level must be provided');
+        console.warn('A log level must be provided for record.');
     }
   }
 

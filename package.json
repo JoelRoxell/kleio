@@ -9,7 +9,7 @@
     "test-watch": "NODE_PATH=./src mocha ./test/**/*.js --compilers js:babel-core/register --recursive --watch",
     "clean": "rm -r ./dist/*",
     "build": "babel src --out-dir dist",
-    "prepublish": "npm run build"
+    "prepublish": "npm test; npm run build"
   },
   "author": "Joel Roxell (https://github.com/JoelRoxell)",
   "license": "MIT",
