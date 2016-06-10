@@ -1,7 +1,7 @@
 ## Kleio
 [![Build Status](https://travis-ci.org/JoelRoxell/Kleio.svg?branch=master)](https://travis-ci.org/JoelRoxell/Kleio)
 
-Kleio is a minimal client side logger with the purpose to simplify debugging and error management during production as well as development phases. In essence Klio provides a common error-level system based on `npm` logging levels and the simplicity to quickly post debugging information to a remote host.
+Kleio is a minimal client side logger with the purpose to simplify debugging and error management during production as well as development phases. In essence Kleio provides a common error-level system based on `npm` logging levels and the simplicity to quickly post debugging information to a remote host.
 
 ## Installation
 `npm install kleio --save`
