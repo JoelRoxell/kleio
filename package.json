@@ -1,7 +1,7 @@
 {
   "name": "kleio",
   "version": "0.3.3",
-  "description": "Simplifies login during development and production phases",
+  "description": "Simplifies logging during development and production phases",
   "main": "./dist/index.js",
   "scripts": {
     "dev": "webpack --progress --colors --watch --config config/webpack.config.js",
