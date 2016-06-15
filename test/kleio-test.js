@@ -26,7 +26,7 @@ describe('Kleio', () => {
     expect(kleio.port).to.equal(80);
   });
 
-  it('Record an error.', () => {
+  it('Record an error to remote host.', () => {
     let logger = new Kleio('https://logger.dev/stack:80', Kleio.ENV_MODES.PROD, log => {
       // Perform server communication...
       return log;
@@ -56,6 +56,16 @@ describe('Kleio', () => {
         }
       }
     });
+  });
+
+  it('Log an error to console', () => {
+    kleio.record(
+      'Console log test',
+      'Log description',
+      Kleio.levels.ERROR,
+      'My Stack trace', {
+        error: true
+      });
   });
 
   it('Validate all messageing levels.', () => {

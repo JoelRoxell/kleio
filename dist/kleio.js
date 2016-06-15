@@ -105,26 +105,27 @@ var Kleio = function () {
   }, {
     key: '_print',
     value: function _print(log) {
-      var levels = Kleio.levels;
+      var levels = Kleio.levels,
+          attr = log.data.attributes;
 
-      switch (log.level) {
+      switch (attr.level) {
         case levels.ERROR:
-          console.error(log.title, log);
+          console.error(attr.title, log);
           break;
         case levels.WARN:
-          console.warn(log.title, log);
+          console.warn(attr.title, log);
           break;
         case levels.INFO:
-          console.info(log.title, log);
+          console.info(attr.title, log);
           break;
         case levels.VERBOSE:
-          console.log(log.title, log);
+          console.log(attr.title, log);
           break;
         case levels.DEBUG:
-          console.debug(log.title, log);
+          console.debug(attr.title, log);
           break;
         default:
-          console.warn('A log level must be provided for record.');
+          throw new Error('A log level must be provided to print record.');
       }
     }
   }, {
