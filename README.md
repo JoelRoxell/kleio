@@ -37,7 +37,7 @@ const kleio = new Kleio('http://remote.server:8080', Kleio.ENV_MODES.PROD);
 ```
 
 ```javascript
-  ENV_MODES: {
+ENV_MODES: {
   PROD: 'PROD',
   DEV: 'DEV',
   SILENT: 'SILENT'
