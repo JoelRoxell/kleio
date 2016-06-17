@@ -42,13 +42,13 @@ var Kleio = function () {
   /**
    * Constructor
    *
-   * @param  {String} socket comprised hostname.
+   * @param  {String} host comprised hostname.
    * @param  {String} env environment configuration.
    * @param  {Function} postMethod Allow send method to be replaced.
    */
 
   function Kleio() {
-    var socket = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+    var host = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
     var env = arguments.length <= 1 || arguments[1] === undefined ? 'dev' : arguments[1];
     var postMethod = arguments[2];
 
@@ -56,54 +56,21 @@ var Kleio = function () {
 
     this._id = _crypto2.default.randomBytes(8).toString('hex');
     this._env = env;
-
-    _extends(this, this._splitHostFromPath(socket));
+    this._host = host;
 
     // Allow server function to be replaced.
     this._postMethod = typeof postMethod === 'function' ? postMethod : this._defaultPostMethod;
   }
 
   _createClass(Kleio, [{
-    key: '_splitHostFromPath',
+    key: '_print',
 
-
-    /**
-     * Splits the domain name from port number.
-     * @param  {String} socket socket specification
-     *
-     * @return {Array} Array of the "divided" socket.
-     */
-    value: function _splitHostFromPath(socket) {
-      var hostConfig = null,
-          host = null,
-          port = null;
-
-      if (typeof socket !== 'string') {
-        throw new Error('Passted socket configuration must be of type string');
-      }
-
-      hostConfig = socket.split(':');
-      port = parseInt(hostConfig.pop(), 10);
-      host = hostConfig.join(':');
-
-      if (typeof host !== 'string' || typeof port !== 'number') {
-        throw new Error('Invalid host string was passed.');
-      }
-
-      return {
-        _host: host,
-        _port: parseInt(port, 10)
-      };
-    }
 
     /**
      * Prints log model information to console.
      *
      * @param  {Log} log object
      */
-
-  }, {
-    key: '_print',
     value: function _print(log) {
       var levels = Kleio.levels,
           attr = log.data.attributes;
@@ -150,7 +117,7 @@ var Kleio = function () {
       var payload = JSON.stringify(log);
 
       try {
-        fetch(this._host + ':' + this._port, {
+        fetch(this._host, {
           method: 'POST',
           headers: {
             'Accept': 'Application/json',
@@ -236,11 +203,6 @@ var Kleio = function () {
     key: 'host',
     get: function get() {
       return this._host;
-    }
-  }, {
-    key: 'port',
-    get: function get() {
-      return this._port;
     }
   }, {
     key: 'levels',

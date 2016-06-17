@@ -1,6 +1,6 @@
 {
   "name": "kleio",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Simplifies logging during development and production phases",
   "main": "./dist/index.js",
   "scripts": {
