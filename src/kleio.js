@@ -11,15 +11,14 @@ class Kleio {
   /**
    * Constructor
    *
-   * @param  {String} socket comprised hostname.
+   * @param  {String} host comprised hostname.
    * @param  {String} env environment configuration.
    * @param  {Function} postMethod Allow send method to be replaced.
    */
-  constructor(socket = '', env = 'dev', postMethod) {
+  constructor(host = '', env = 'dev', postMethod) {
     this._id = crypto.randomBytes(8).toString('hex');
     this._env = env;
-
-    Object.assign(this, this._splitHostFromPath(socket));
+    this._host = host;
 
     // Allow server function to be replaced.
     this._postMethod = typeof postMethod === 'function' ?
@@ -34,41 +33,8 @@ class Kleio {
     return this._host;
   }
 
-  get port() {
-    return this._port;
-  }
-
   get levels() {
     return this._levels;
-  }
-
-  /**
-   * Splits the domain name from port number.
-   * @param  {String} socket socket specification
-   *
-   * @return {Array} Array of the "divided" socket.
-   */
-  _splitHostFromPath(socket) {
-    let hostConfig = null,
-        host = null,
-        port = null;
-
-    if (typeof socket !== 'string') {
-      throw new Error('Passted socket configuration must be of type string');
-    }
-
-    hostConfig = socket.split(':');
-    port = parseInt(hostConfig.pop(), 10);
-    host = hostConfig.join(':');
-
-    if (typeof host !== 'string' || typeof port !== 'number') {
-      throw new Error('Invalid host string was passed.');
-    }
-
-    return {
-      _host: host,
-      _port: parseInt(port, 10)
-    };
   }
 
   /**
@@ -118,7 +84,7 @@ class Kleio {
     const payload = JSON.stringify(log);
 
     try {
-      fetch(`${this._host}:${this._port}`, {
+      fetch(this._host, {
         method: 'POST',
         headers: {
           'Accept': 'Application/json',

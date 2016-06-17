@@ -9,10 +9,10 @@ describe('Kleio', () => {
   let kleio = null;
 
   beforeEach(() => {
-    const socket = 'http://localhost:80',
+    const host = 'http://localhost:80',
         env = 'dev';
 
-    kleio = new Kleio(socket, env);
+    kleio = new Kleio(host, env);
   });
 
   // Use it to test a single attribute of a target.
@@ -21,9 +21,11 @@ describe('Kleio', () => {
     expect(kleio).to.exist;
   });
 
-  it('Separate host string.', () => {
-    expect(kleio.host).to.contain('http://localhost');
-    expect(kleio.port).to.equal(80);
+  it('Validate host strings.', () => {
+    expect(kleio.host).to.contain('http://localhost:80');
+
+    let https = new Kleio('https://localhost:80', Kleio.ENV_MODES.DEV);
+    expect(https.host).to.contain('https://localhost:80');
   });
 
   it('Record an error to remote host.', () => {
