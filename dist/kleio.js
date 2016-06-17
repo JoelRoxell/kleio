@@ -120,8 +120,7 @@ var Kleio = function () {
         fetch(this._host, {
           method: 'POST',
           headers: {
-            'Accept': 'Application/json',
-            'Content-Type': 'Application/json'
+            'Content-Type': 'application/vnd.api+json'
           },
           body: payload
         }).then(function (res) {
@@ -149,13 +148,13 @@ var Kleio = function () {
   }, {
     key: '_prepareApiLogModel',
     value: function _prepareApiLogModel(log) {
+      log.data.userAgent = navigator.userAgent;
+      log.data.id = this._id;
+
       return {
         data: {
           type: 'log',
-          id: this._id,
-          attributes: _extends({
-            userAgent: navigator.userAgent
-          }, log)
+          attributes: _extends({}, log)
         }
       };
     }
