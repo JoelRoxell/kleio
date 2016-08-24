@@ -16,10 +16,6 @@ var _log = require('./models/log');
 
 var _log2 = _interopRequireDefault(_log);
 
-var _crypto = require('crypto');
-
-var _crypto2 = _interopRequireDefault(_crypto);
-
 var _config = require('../config');
 
 var _config2 = _interopRequireDefault(_config);
@@ -54,7 +50,7 @@ var Kleio = function () {
 
     _classCallCheck(this, Kleio);
 
-    this._id = _crypto2.default.randomBytes(8).toString('hex');
+    this._id = Math.random().toString(36).substring(7);
     this._env = env;
     this._host = host;
 
