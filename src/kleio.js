@@ -1,6 +1,5 @@
 import levels from './models/log-levels';
 import Log from './models/log';
-import crypto from 'crypto';
 import config from '../config';
 import whatwgFetch from 'whatwg-fetch'; // eslint-disable-line
 
@@ -16,7 +15,7 @@ class Kleio {
    * @param  {Function} postMethod Allow send method to be replaced.
    */
   constructor(host = '', env = 'dev', postMethod) {
-    this._id = crypto.randomBytes(8).toString('hex');
+    this._id = Math.random().toString(36).substring(7);
     this._env = env;
     this._host = host;
 
