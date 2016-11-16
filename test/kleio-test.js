@@ -1,146 +1,68 @@
-/* eslint no-unused-expressions: "off" */
-import { expect } from './test-helper';
-import Kleio from 'kleio';
-import Log from 'models/log';
-import distKleio from '../dist';
+import { expect } from 'chai';
+import sinon from 'sinon';
+import R from 'ramda';
 
-// Use to describe to group together similar tests.
-describe('Kleio', () => {
-  let kleio = null;
+import kleio, { LEVELS } from 'kleio';
 
-  beforeEach(() => {
-    const host = 'http://localhost:80',
-        env = 'dev';
+describe('kleio', function() {
+  let log;
 
-    kleio = new Kleio(host, env);
-  });
-
-  // Use it to test a single attribute of a target.
-  it('Instantiate logger correctly.', () => {
-    // Use expect to make an assertion about a target
-    expect(kleio).to.exist;
-  });
-
-  it('Validate host strings.', () => {
-    expect(kleio.host).to.contain('http://localhost:80');
-
-    let https = new Kleio('https://localhost:80', Kleio.ENV_MODES.DEV);
-    expect(https.host).to.contain('https://localhost:80');
-  });
-
-  it('Record an error to remote host.', () => {
-    let logger = new Kleio('https://logger.dev/stack:80', Kleio.ENV_MODES.PROD, log => {
-      // Perform server communication...
-      return log;
-    });
-
-    const log = logger.record(
-      'Title',
-      'description',
-      Kleio.levels.VERBOSE,
-      'stack',
-      {
-        context: 'test issue'
-      }
-    );
-
-    expect(log).deep.equal({
-      data: {
-        type: 'log',
-        attributes: {
-          title: 'Title',
-          description: 'description',
-          level: Kleio.levels.VERBOSE,
-          stackTrace: 'stack',
-          data: {
-            context: 'test issue',
-            id: logger.id,
-            userAgent: navigator.userAgent
-          }
+  beforeEach(function() {
+    let postMethod = function post(payload) {
+      return new Promise(function fetch(resolve, reject) {
+        if (payload) {
+          resolve(payload);
+        } else {
+          reject(new Error('Failed to post log'));
         }
-      }
+      });
+    };
+
+    log = kleio('production')(postMethod);
+  });
+
+  it('should currey and call the function if all parameters are passed.', function() {
+    const callback = sinon.spy();
+    const log = kleio('production')(callback)('msg')(LEVELS.SILENT)({});
+
+    expect(callback.calledOnce).to.equal(true);
+  });
+
+  it('should not run post callback in development mode', function() {
+    const callback = sinon.spy();
+    const log = kleio('development')(callback)('msg')(LEVELS.SILENT)({});
+
+    expect(callback.calledOnce).to.equal(false);
+  });
+
+  it('should use use post function and throw error', function(done) {
+    log(R._)(LEVELS.ERROR)({}).catch(err => {
+      expect(err).to.exist;
+
+      done();
     });
   });
 
-  it('Log an error to console', () => {
-    kleio.record(
-      'Console log test',
-      'Log description',
-      Kleio.levels.ERROR,
-      'My Stack trace', {
-        error: true
-      });
+  it('should use use post function and succeed', function(done) {
+    log('msg')(LEVELS.ERROR)({}).then(res => {
+      expect(res).to.have.property('message', 'msg');
+      expect(res).to.have.property('severity', 0);
+
+      done();
+    }).catch(err => {
+      throw err;
+    });
   });
 
-  it('Validate all messageing levels.', () => {
-    expect(Kleio.levels).to.deep.equal({
+  it('log levels should be specifed', function() {
+    expect(LEVELS).to.deep.equal({
       ERROR: 0,
       WARN: 1,
       INFO: 2,
       VERBOSE: 3,
       DEBUG: 4,
-      SILLY: 5
-    });
-  });
-
-  it('Compose a post log object based on <json:api> standard.', () => {
-    let logger = new Kleio('https://logger.dev/stack:80', Kleio.ENV_MODES.PROD, log => {
-      // Perform server communication...
-      return log;
-    });
-
-    const log = logger.record(
-      'Log title',
-      'log description',
-      Kleio.levels.INFO,
-      'log stack', {
-        additionalData: 'test issue #2'
-      }
-    );
-
-    expect(log).deep.equal({
-      data: {
-        type: 'log',
-        attributes: {
-          title: 'Log title',
-          description: 'log description',
-          level: Kleio.levels.INFO,
-          stackTrace: 'log stack',
-          data: {
-            id: logger.id,
-            additionalData: 'test issue #2',
-            userAgent: navigator.userAgent
-          }
-        }
-      }
-    });
-  });
-
-  describe('Log', () => {
-    it('Instantiate model.', () => {
-      const error = `Error: stackTrace\n at Context.<anonymous>`,
-          log = new Log(
-            'Test title',
-            'Test log init',
-            Kleio.levels.ERROR,
-            error,
-            { additionalData: true }
-          );
-
-      expect(log).deep.equal({
-        title: 'Test title',
-        description: 'Test log init',
-        level: 0,
-        stackTrace: error,
-        data: { additionalData: true }
-      });
-    });
-  });
-
-  describe('Export', () => {
-    it('Eport kleio dist properly.', () => {
-      expect(Object.getPrototypeOf(Kleio))
-        .to.equal(Object.getPrototypeOf(distKleio));
+      SILLY: 5,
+      SILENT: 6
     });
   });
 });
