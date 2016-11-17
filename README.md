@@ -1,7 +1,7 @@
 ## Kleio
 [![Build Status](https://travis-ci.org/JoelRoxell/Kleio.svg?branch=master)](https://travis-ci.org/JoelRoxell/Kleio)
 
-Kleio is a functional logger which purpose is to simplify debugging and error management in production and development phases. In essence kleio provides the common error-level/severity system based on `npm` logging levels and the simplicity to quickly post debugging information to a remote host.
+Kleio is a functional logger which purpose is to simplify debugging and error management during production and development phases. In essence kleio provides the common error-level/severity system based on `npm` logging levels. The goal of kleio is to provide a simple and efficient API to quickly send debugging information to a remote host.
 
 ## Installation
 `npm install kleio --save`
@@ -9,7 +9,7 @@ Kleio is a functional logger which purpose is to simplify debugging and error ma
 ## Usage
 > Note that the logger is invoked when last parameter has be acquired passed.
 
-### Create a functional logger which can be used multiple times
+### Create a reusable functional logger
 ```javascript
 let log = kleio(/* post implementation */)(/* environment */);
 
@@ -58,7 +58,7 @@ kleio(
 ).then(res => { /* ... */}).catch(err => { /* ... */});
 
 // or
-//
+
 kleio(/* post implementation */)
   (/* environment */)
   (/* message */)
@@ -94,10 +94,8 @@ Levels are defined using integer values 0(high) to 6(low).
 ```
 
 ## Tests
-
 `npm test`
 
 
 ## License
-
 MIT

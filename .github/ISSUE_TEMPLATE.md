@@ -1,6 +1,6 @@
-**User Story**
+**Job Story**
 
-As a `<user type>`, I want `<a goal>` so that `<benefit>`.
+When <situation>, I want to <motivation>, so I can <expected outcome>
 
 **Acceptance Criteria**
 
