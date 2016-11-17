@@ -1,164 +1,99 @@
-import levels from './models/log-levels';
-import Log from './models/log';
-import config from '../config';
-import whatwgFetch from 'whatwg-fetch'; // eslint-disable-line
+import R from 'ramda';
+
+export const LEVELS = {
+  ERROR: 0,
+  WARN: 1,
+  INFO: 2,
+  VERBOSE: 3,
+  DEBUG: 4,
+  SILLY: 5,
+  SILENT: 6
+};
 
 /**
- * Core class which provides simplified logging capabilities.
+ * Creates log entry object
+ * @param  {String} message  Log messge.
+ * @param  {Number} severity Integer describing the error level.
+ * @param  {mixed}  meta     Optional meta data that might be valuable during debugging.
+ * @return {Object}          Comprised log obejct.
  */
-class Kleio {
-  /**
-   * Constructor
-   *
-   * @param  {String} host comprised hostname.
-   * @param  {String} env environment configuration.
-   * @param  {Function} postMethod Allow send method to be replaced.
-   */
-  constructor(host = '', env = 'dev', postMethod) {
-    this._id = Math.random().toString(36).substring(7);
-    this._env = env;
-    this._host = host;
-
-    // Allow server function to be replaced.
-    this._postMethod = typeof postMethod === 'function' ?
-      postMethod : this._defaultPostMethod;
+function createEntry(message, severity, meta) {
+  if (typeof message !== 'string') {
+    throw new Error(`parameter message must be of type string, not ${typeof message}`);
   }
 
-  get id() {
-    return this._id;
-  }
+  return {
+    time: new Date().toISOString(),
+    message,
+    severity,
+    meta
+  };
+}
 
-  get host() {
-    return this._host;
-  }
+/**
+ * Prints log message to console, used in development environments.
+ * @param  {String} message  Log messge.
+ * @param  {Number} severity Integer describing the error level.
+ * @param  {mixed}  meta     Optional meta data that might be valuable during debugging.
+ */
+function consoleLog(message, severity, meta) {
+  const { ERROR, WARN, INFO, VERBOSE, DEBUG, SILLY, SILENT } = LEVELS;
 
-  get levels() {
-    return this._levels;
-  }
+  switch (severity) {
+    case ERROR:
+      console.error(message, meta);
+      break;
 
-  /**
-   * Prints log model information to console.
-   *
-   * @param  {Log} log object
-   */
-  _print(log) {
-    const levels = Kleio.levels,
-        attr = log.data.attributes;
+    case WARN:
+      console.warn(message, meta);
+      break;
 
-    switch (attr.level) {
-      case levels.ERROR:
-        console.error(attr.title, log);
-        break;
-      case levels.WARN:
-        console.warn(attr.title, log);
-        break;
-      case levels.INFO:
-        console.info(attr.title, log);
-        break;
-      case levels.VERBOSE:
-        console.log(attr.title, log);
-        break;
-      case levels.DEBUG:
-        console.debug(attr.title, log);
-        break;
-      default:
-        throw new Error('A log level must be provided to print record.');
-    }
-  }
+    case INFO:
+      console.info(message, meta);
+      break;
 
-  _store() {
-    // TODO: Store log in localstorage.
-  }
+    case VERBOSE:
+      console.log(message);
+      console.table(meta);
+      break;
 
-  /**
-   * Default post method used to send log object to an external service,
-   * may be overriden in constructor.
-   *
-   * @param  {Log}      log object.
-   * @param  {Function} cb  callback.
-   *
-   * @return {Object}   payload sent to server.
-   */
-  _defaultPostMethod(log, cb) {
-    const payload = JSON.stringify(log);
+    case DEBUG:
+      console.log(message);
+      console.debug(meta);
+      break;
 
-    try {
-      fetch(this._host, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/vnd.api+json'
-        },
-        body: payload
-      }).then(res => {
-        if (typeof cb === 'function') {
-          cb(null, res);
-        }
-      }).catch(err => {
-        if (typeof cb === 'function') {
-          cb(err);
-        }
-      });
-    } catch (e) {
-      throw e;
-    }
+    case SILENT:
+      break;
 
-    return payload;
-  }
-
-  /**
-   * Prase the log model to a correct format based on http://jsonapi.org/
-   * @param  {Log} log data model
-   * @return {Object}  parsed JSON object
-   */
-  _prepareApiLogModel(log) {
-    log.data.userAgent = navigator.userAgent;
-    log.data.id = this._id;
-
-    return {
-      data: {
-        type: 'log',
-        attributes: {
-          ...log
-        }
-      }
-    };
-  }
-
-  /**
-   * Recoreds the current description, depending on the initial configuration the item will either be sent to console, server and/or localstorage.
-   *
-   * @param  {String}  title log title
-   * @param  {String} description Description of the error or general information of the specific dunction body.
-   * @param  {Number} level Error level identification.
-   * @param  {String} stacktrace Current stacktrace
-   * @param  {Object} data JOSN-object with additional data.
-   * @param  {Funciton} cb callback
-   *
-   * @return {Log} The created log issue.
-   */
-  record(
-    title,
-    description = '',
-    level = Kleio.levels.DEBUG,
-    stacktrace = {},
-    data = {},
-    cb
-  ) {
-    let log = new Log(title, description, level, stacktrace, data);
-
-    log = this._prepareApiLogModel(log);
-
-    if (this._env === Kleio.ENV_MODES.PROD) {
-      this._postMethod(log, cb);
-    } else {
-      this._print(log);
-    }
-
-    return log;
+    case SILLY:
+    default:
+      console.log(message, meta);
   }
 }
 
-Kleio.levels = levels;
-Kleio.ENV_MODES = config.ENV_MODES;
+/**
+ * Logger.
+ * @param  {String} env       Environment variable, (development|production)
+ * @param  {Function} post    Callback used to post log to remote server, only called in prodcution.
+ * @param  {Number} severity  Integer describing the error level.
+ * @param  {String} message   Log description.
+ * @param  {mixed}  meta      Optional meta data that might be valuable during debugging.
+ * @return {Promise|Function} Use this if additional tasks or error managments must be performed after a log entry.
+ */
+function core(env, post, severity, message, meta) {
+  if (env === 'production') {
+    try {
+      const payload = createEntry(message, severity, meta);
 
-export default Kleio;
+      return post(payload);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  } else if (env === 'development') {
+    consoleLog(message, severity, meta);
+  }
+}
+
+const log = R.curry(core);
+
+export default log;

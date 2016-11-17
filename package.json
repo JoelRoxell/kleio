@@ -1,6 +1,6 @@
 {
   "name": "kleio",
-  "version": "0.3.8",
+  "version": "1.0.0-rc4",
   "description": "Simplifies logging during development and production phases",
   "main": "./dist/index.js",
   "scripts": {
@@ -9,14 +9,14 @@
     "test-watch": "NODE_PATH=./src mocha ./test/**/*.js --compilers js:babel-core/register --recursive --watch",
     "clean": "rm -r ./dist/*",
     "build": "babel src --out-dir dist",
-    "prepublish": "npm test; npm run build"
+    "prepublish": "npm test; npm run clean; npm run build"
   },
   "author": "Joel Roxell (https://github.com/JoelRoxell)",
   "license": "MIT",
-  "homepage": "https://github.com/JoelRoxell/Kleio",
+  "homepage": "https://github.com/JoelRoxell/kleio",
   "repository": {
     "type": "git",
-    "url": "git@github.com:JoelRoxell/Kleio.git"
+    "url": "git@github.com:JoelRoxell/kleio.git"
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",
@@ -32,9 +32,10 @@
     "imports-loader": "^0.6.5",
     "jsdom": "^9.2.1",
     "mocha": "^2.5.3",
+    "sinon": "^1.17.6",
     "webpack": "^1.13.1"
   },
   "dependencies": {
-    "whatwg-fetch": "^1.0.0"
+    "ramda": "^0.22.1"
   }
 }

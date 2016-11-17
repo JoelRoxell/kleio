@@ -34,6 +34,9 @@
       "objectsInObjects": false,
       "arraysInObjects": false
     }],
-    "no-console": 0
+    "no-console": 0,
+    "newline-after-var": ["error", "always"],
+    "one-var": ["error", "never"],
+    "max-len": ["error", 120]
   }
 }
