@@ -70,7 +70,7 @@ describe('kleio', function() {
   });
 
 
-  it('log levels should be specifed', function() {
+  it('should provide log levels', function() {
     expect(LEVELS).to.deep.equal({
       ERROR: 0,
       WARN: 1,
