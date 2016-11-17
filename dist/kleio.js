@@ -23,6 +23,13 @@ var LEVELS = exports.LEVELS = {
   SILENT: 6
 };
 
+/**
+ * Creates log entry object
+ * @param  {String} message  Log messge.
+ * @param  {Number} severity Integer describing the error level.
+ * @param  {mixed}  meta     Optional meta data that might be valuable during debugging.
+ * @return {Object}          Comprised log obejct.
+ */
 function createEntry(message, severity, meta) {
   if (typeof message !== 'string') {
     throw new Error('parameter message must be of type string, not ' + (typeof message === 'undefined' ? 'undefined' : _typeof(message)));
@@ -36,6 +43,12 @@ function createEntry(message, severity, meta) {
   };
 }
 
+/**
+ * Prints log message to console, used in development environments.
+ * @param  {String} message  Log messge.
+ * @param  {Number} severity Integer describing the error level.
+ * @param  {mixed}  meta     Optional meta data that might be valuable during debugging.
+ */
 function consoleLog(message, severity, meta) {
   var ERROR = LEVELS.ERROR,
       WARN = LEVELS.WARN,
@@ -79,6 +92,15 @@ function consoleLog(message, severity, meta) {
   }
 }
 
+/**
+ * Logger.
+ * @param  {String} env      Environment variable, (development|production)
+ * @param  {Function} post   Callback used to post log to remote server, only called in prodcution.
+ * @param  {String} message  Log description.
+ * @param  {Number} severity Integer describing the error level.
+ * @param  {mixed}  meta     Optional meta data that might be valuable during debugging.
+ * @return {Promise}         Use this if additional tasks or error managments must be performed after a log entry.
+ */
 function core(env, post, message, severity, meta) {
   if (env === 'production') {
     return new Promise(function (resolve, reject) {
