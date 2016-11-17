@@ -93,12 +93,12 @@ function consoleLog(message, severity, meta) {
 
 /**
  * Logger.
- * @param  {String} env      Environment variable, (development|production)
- * @param  {Function} post   Callback used to post log to remote server, only called in prodcution.
- * @param  {Number} severity Integer describing the error level.
- * @param  {String} message  Log description.
- * @param  {mixed}  meta     Optional meta data that might be valuable during debugging.
- * @return {Promise}         Use this if additional tasks or error managments must be performed after a log entry.
+ * @param  {String} env       Environment variable, (development|production)
+ * @param  {Function} post    Callback used to post log to remote server, only called in prodcution.
+ * @param  {Number} severity  Integer describing the error level.
+ * @param  {String} message   Log description.
+ * @param  {mixed}  meta      Optional meta data that might be valuable during debugging.
+ * @return {Promise|Function} Use this if additional tasks or error managments must be performed after a log entry.
  */
 function core(env, post, severity, message, meta) {
   if (env === 'production') {

@@ -44,6 +44,68 @@ log('Perform something after post')(LEVELS.ERROR)()
   .catch(err => { /* ... */ });
 ```
 
+### A more advanced use case
+```javascript
+// services/log.js
+import { _ } from 'ramda';
+import kleio, { LEVELS } from 'kleio';
+
+const env = process.env.NODE_ENV || 'development';
+
+const developmentLogger = kleio(env)(_);
+const productionLogger = kleio(env)(function(log) {
+  return fetch('/log', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(log)
+  }).then(checkStatus);
+});
+
+function checkStatus(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  } else {
+    return Promise.reject(response);
+  }
+}
+
+export const error = productionLogger(LEVELS.ERROR);
+export const warn = productionLogger(LEVELS.WARN);
+export const log = developmentLogger(LEVELS.SILLY);
+export const info = developmentLogger(LEVELS.INFO);
+export const debug = developmentLogger(LEVELS.DEBUG);
+export const verbose = developmentLogger(LEVELS.VERBOSE);
+
+// antoher-file.js
+import { log, error, info, debug, verbose } from 'services/log';
+
+log('A silly log', 1339);
+
+error('Error message', {}).then(function(res) {
+    /* ... */
+  })
+  .catch(function(e) {
+    /* ... */
+  });
+
+info('Info message', 123);
+
+debug('Debug message', {
+  x: 10
+});
+
+verbose('Verbose', [
+  {
+    x: 10
+  },
+  {
+    x: 20
+  }
+]);
+```
+
 #### Post directly
 ```javascript
 import kleio from 'kleio';
