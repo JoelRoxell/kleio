@@ -45,7 +45,7 @@ describe('kleio', function() {
     });
   });
 
-  it('should use use post function and succeed', function(done) {
+  it('should use use post Promise and succeed', function(done) {
     log(LEVELS.ERROR)('msg')({}).then(res => {
       expect(res).to.have.property('message', 'msg');
       expect(res).to.have.property('severity', 0);
@@ -55,6 +55,20 @@ describe('kleio', function() {
       throw err;
     });
   });
+
+  it('should use use post function and succeed', function(done) {
+    let postMethod = function fetch(log) {
+      expect(log).to.have.property('message', 'msg');
+      expect(log).to.have.property('severity', 0);
+
+      done();
+    };
+
+    log = kleio('production')(postMethod);
+
+    log(LEVELS.ERROR)('msg')({});
+  });
+
 
   it('log levels should be specifed', function() {
     expect(LEVELS).to.deep.equal({

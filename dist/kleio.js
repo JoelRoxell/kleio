@@ -102,15 +102,13 @@ function consoleLog(message, severity, meta) {
  */
 function core(env, post, severity, message, meta) {
   if (env === 'production') {
-    return new Promise(function (resolve, reject) {
-      try {
-        var payload = createEntry(message, severity, meta);
+    try {
+      var payload = createEntry(message, severity, meta);
 
-        resolve(post(payload));
-      } catch (e) {
-        reject(e);
-      }
-    });
+      return post(payload);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   } else if (env === 'development') {
     consoleLog(message, severity, meta);
   }
