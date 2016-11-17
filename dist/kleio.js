@@ -61,20 +61,19 @@ function consoleLog(message, severity, meta) {
 
   switch (severity) {
     case ERROR:
-      console.error(message);
+      console.error(message, meta);
       break;
 
     case WARN:
-      console.warn(message);
+      console.warn(message, meta);
       break;
 
     case INFO:
-      console.info(message);
+      console.info(message, meta);
       break;
 
     case VERBOSE:
       console.log(message);
-      console.log(meta);
       console.table(meta);
       break;
 
@@ -88,7 +87,7 @@ function consoleLog(message, severity, meta) {
 
     case SILLY:
     default:
-      console.log(message);
+      console.log(message, meta);
   }
 }
 

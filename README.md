@@ -1,5 +1,4 @@
-## Kleio
-[![Build Status](https://travis-ci.org/JoelRoxell/Kleio.svg?branch=master)](https://travis-ci.org/JoelRoxell/Kleio)
+## Kleio [![Build Status](https://travis-ci.org/JoelRoxell/Kleio.svg?branch=master)](https://travis-ci.org/JoelRoxell/Kleio)
 
 Kleio is a functional logger which purpose is to simplify debugging and error management during production and development phases. In essence kleio provides the common error-level/severity system based on `npm` logging levels. The goal of kleio is to provide a simple and efficient API to quickly send debugging information to a remote host.
 
@@ -18,7 +17,7 @@ log(/* message */)(/* severity */)(/* meta-data */);
 log(/* message */, /* severity */, /* meta-data */);
 ```
 
-## Example
+### Simple example
 ```javascript
 import kleio, { LEVELS } from 'kleio';
 
